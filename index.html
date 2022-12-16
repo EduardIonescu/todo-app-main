@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="styles.css" />
+
+		<title>Todo app</title>
+	</head>
+	<body>
+		<img
+			src="./images/bg-desktop-dark.jpg"
+			alt=""
+			aria-hidden="true"
+			class="image-bg"
+		/>
+
+		<header>
+			<h1 class="title">TODO</h1>
+			<button class="light-switch">
+				<img src="./images/icon-sun.svg" alt="" aria-hidden="true" />
+			</button>
+		</header>
+		<main>
+			<section class="top">
+				<form>
+					<label for="checkbox-new-todo"></label>
+					<input
+						type="checkbox"
+						name="checkbox-new-todo"
+						id="checkbox-new-todo"
+						class="checkbox"
+					/>
+					<label for="text-new-todo"></label>
+					<input
+						type="text"
+						class="text"
+						id="text-new-todo"
+						placeholder="Create a new todo..."
+						spellcheck="false"
+						autocomplete="off"
+					/>
+				</form>
+			</section>
+
+			<section class="bottom">
+				<article class="container-item">
+					<input type="checkbox" name="" id="" class="checkbox" />
+					<p class="text-output">Jog around the park 3x</p>
+					<button class="button-delete hidden">
+						<img src="/images/icon-cross.svg" alt="delete button" />
+					</button>
+				</article>
+				<hr />
+				<article class="container-item">
+					<input type="checkbox" name="" id="" class="checkbox" />
+					<p class="text-output">10 minutes meditation</p>
+					<button class="button-delete hidden">
+						<img src="/images/icon-cross.svg" alt="delete button" />
+					</button>
+				</article>
+
+				<article class="container-item">
+					<input type="checkbox" name="" id="" class="checkbox" />
+					<p class="text-output">Read for 1 hour</p>
+					<button class="button-delete hidden">
+						<img src="/images/icon-cross.svg" alt="delete button" />
+					</button>
+				</article>
+
+				<article class="container-item">
+					<input type="checkbox" name="" id="" class="checkbox" />
+					<p class="text-output">Pick up groceries</p>
+					<button class="button-delete hidden">
+						<img src="/images/icon-cross.svg" alt="delete button" />
+					</button>
+				</article>
+
+				<article class="container-item">
+					<input type="checkbox" name="" id="" class="checkbox" />
+					<p class="text-output">
+						Complete Todo App on Frontend Mentor
+					</p>
+					<button class="button-delete hidden">
+						<img src="/images/icon-cross.svg" alt="delete button" />
+					</button>
+				</article>
+			</section>
+			<nav class="navbar">
+				<p class="items-left">
+					<span class="number-items-left"></span> items left
+				</p>
+				<div class="container-buttons-middle">
+					<button class="button-all">All</button>
+					<button class="button-active">Active</button>
+					<button class="button-completed">Completed</button>
+				</div>
+				<button class="button-clear-completed">Clear Completed</button>
+			</nav>
+		</main>
+		<footer>
+			<p class="drag-and-drop">Drag and drop to reorder list</p>
+		</footer>
+	</body>
+</html>
+<script src="script.js"></script>

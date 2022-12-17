@@ -233,3 +233,22 @@ function getTodos(checked = true) {
 	console.log(data);
 	showTodos();
 })();
+
+// Light & Dark mode switch
+const sun = document.querySelector(".sun");
+const moon = document.querySelector(".moon");
+const lightSwitch = document.querySelector(".light-switch");
+const imageBG = document.querySelector(".image-bg");
+
+lightSwitch.addEventListener("click", () => {
+	sun.classList.toggle("animate-sun");
+	moon.classList.toggle("animate-moon");
+
+	const currentTheme = document.documentElement.getAttribute("data-theme");
+
+	const switchToTheme = currentTheme === "dark" ? "light" : "dark";
+
+	imageBG.setAttribute("src", `./images/bg-desktop-${switchToTheme}.jpg`);
+
+	document.documentElement.setAttribute("data-theme", switchToTheme);
+});

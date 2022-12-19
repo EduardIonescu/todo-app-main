@@ -15,6 +15,21 @@ const buttonsNavbar = document.querySelectorAll(
 	".container-buttons-middle button"
 );
 
+const state = {
+	all: true,
+	active: false,
+	completed: false,
+
+	setState: function (stateName) {
+		const keys = Object.keys(this);
+		keys.pop();
+		for (const key of keys) {
+			this[key] = false;
+		}
+		this[stateName] = true;
+	},
+};
+
 // Submit on checkbox click
 formCheckbox.addEventListener("click", () => {
 	formValidation();
@@ -26,25 +41,49 @@ form.addEventListener("submit", (e) => {
 
 function formValidation() {
 	if (textInput.value === "") {
-		console.log("failure");
 	} else {
-		console.log("success");
-		acceptData();
+		let randomID = Math.floor(10 ** 12 * Math.random());
+		randomID = "id" + randomID;
+
+		acceptData(randomID);
 	}
 }
-console.log(localStorage.getItem("data"));
+
 let data = [];
 
 // On first load / when refreshed with no items,
 // the data takes the value of defaultData
-
 const defaultData = [
-	{ text: "Complete online JavaScript course", isChecked: true },
-	{ text: "Jog around the park 3x", isChecked: false },
-	{ text: "10 minutes meditation", isChecked: false },
-	{ text: "Read for 1 hour", isChecked: false },
-	{ text: "Pick up groceries", isChecked: false },
-	{ text: "Complete Todo App on Frontend Mentor", isChecked: false },
+	{
+		listID: "id1111",
+		text: "Complete online JavaScript course",
+		isChecked: true,
+	},
+	{
+		listID: "id1777711211",
+		text: "Jog around the park 3x",
+		isChecked: false,
+	},
+	{
+		listID: "id152142142145551",
+		text: "10 minutes meditation",
+		isChecked: false,
+	},
+	{
+		listID: "id123178888234144441",
+		text: "Read for 1 hour",
+		isChecked: false,
+	},
+	{
+		listID: "id3321313213123133",
+		text: "Pick up groceries",
+		isChecked: false,
+	},
+	{
+		listID: "id2222",
+		text: "Complete Todo App on Frontend Mentor",
+		isChecked: false,
+	},
 ];
 (() => {
 	data = JSON.parse(localStorage.getItem("data")) || [];
@@ -53,36 +92,55 @@ const defaultData = [
 		data = defaultData;
 	} else {
 	}
-	console.log(data);
 	showTodos();
 })();
 
 // Accepts input data
-function acceptData() {
+function acceptData(listID) {
 	data.push({
+		listID,
 		text: textInput.value,
 		isChecked: false,
 	});
 
-	console.log(data);
 	showTodos();
 }
 
 // Recreates the Todos list on new input
-function showTodos(selectedData = data) {
+function showTodos() {
 	sectionTodos.innerHTML = "";
 
-	selectedData.map((d, i) => {
+	if (state.all) {
+		data.map((d, i) => {
+			createListItems(d);
+		});
+	} else if (state.active) {
+		const uncheckedTodoList = getTodos();
+		uncheckedTodoList.map((d, i) => {
+			createListItems(d);
+		});
+	} else {
+		const checkedTodoList = getTodos((checked = false));
+		checkedTodoList.map((d, i) => {
+			createListItems(d);
+		});
+	}
+
+	function createListItems(d) {
 		return (sectionTodos.innerHTML += `
-			<li class="container-item" draggable="true" id=${i}>
+			<li class="container-item" draggable="true" id=${d.listID}>
 				<input 
 					type="checkbox" 
 					name="" 
 					class="checkbox"
 					${d.isChecked ? "checked" : ""} />
-				<p class="text-output ${d.isChecked ? "line-through" : ""}">
-					${d.text}
-				</p>
+				<input class="text-output text-new-todo ${d.isChecked ? "line-through" : ""}" 
+						readonly
+						type="text"
+						maxlength=50
+						value="${d.text}" />
+					
+				
 
 				<button class="button-delete hidden">
 					<img src="/images/icon-cross.svg" alt="delete button" />
@@ -90,7 +148,8 @@ function showTodos(selectedData = data) {
 			</li>
 
 			`);
-	});
+	}
+
 	localStorage.setItem("data", JSON.stringify(data));
 	showItemsLeft();
 	createFunctionality();
@@ -111,7 +170,6 @@ function createFunctionality() {
 		checkbox.addEventListener("click", () => {
 			checkbox.toggleAttribute("checked");
 			data[index].isChecked = !data[index].isChecked;
-			console.log(data[index].isChecked);
 
 			showTodos();
 		});
@@ -135,6 +193,17 @@ function createFunctionality() {
 		deleteButton.addEventListener("click", deleteTask);
 	});
 
+	function deleteTask() {
+		liParent = this.parentElement;
+
+		const index = data.findIndex((list) => list.listID == liParent.id);
+
+		data.splice(index, 1);
+		liParent.remove();
+
+		showTodos();
+	}
+
 	// DRAG & DROP
 	listItems.forEach((draggable) => {
 		draggable.addEventListener("dragstart", () =>
@@ -148,32 +217,57 @@ function createFunctionality() {
 		draggable.addEventListener("touchend", dragend);
 	});
 
+	Array.prototype.move = function (from, to) {
+		this.splice(to, 0, this.splice(from, 1)[0]);
+	};
+
+	let afterElement;
+
 	function dragend() {
 		this.classList.remove("dragging");
 		const listItemsAfterMoving = document.querySelectorAll("li");
 
-		// Reinitialize data with listItems after dragend
-		data = [];
-		listItemsAfterMoving.forEach((li) => {
-			const text = li.querySelector("p.text-output").innerHTML;
-			const isChecked = li
-				.querySelector("input[type=checkbox]")
-				.hasAttribute("checked");
+		let indexTo;
+		if (afterElement) {
+			indexTo = data.findIndex((list) => list.listID == afterElement.id);
+		} else {
+			indexTo = data.length - 1;
+		}
 
-			data.push({
-				text,
-				isChecked,
-			});
-		});
+		const indexFrom = data.findIndex((list) => list.listID == this.id);
+
+		if (indexFrom > indexTo || !afterElement) {
+			data.move(indexFrom, indexTo);
+		} else {
+			data.move(indexFrom, indexTo - 1);
+		}
 
 		showTodos();
 		localStorage.setItem("data", JSON.stringify(data));
 	}
 
-	// Worth looking into debouncers for this one
-	sectionTodos.addEventListener("dragover", (e) => {
-		dragover(e);
-	});
+	// Worth looing into better debouncer for this one, but this still helps.
+	function debounce(fn, delay) {
+		var timer = null;
+		return function () {
+			var context = this,
+				args = arguments;
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				fn.apply(context, args);
+			}, delay);
+		};
+	}
+
+	sectionTodos.addEventListener(
+		"dragover",
+		debounce((e) => {
+			dragover(e);
+			// more than 3ms delay just makes it seem too laggy
+		}, 3)
+	);
+
+	// Debouncer messes this one up, worth looking into in the future.
 	sectionTodos.addEventListener("touchmove", (e) => {
 		dragover(e);
 	});
@@ -181,11 +275,11 @@ function createFunctionality() {
 	function dragover(e) {
 		e.preventDefault();
 		// first one for Desktop, second one for Touchscreen
-		const top = e.clientY || e.targetTouches[0].pageY;
-		const afterElement = getDragAfterElement(sectionTodos, top);
+		const top = e.clientY || e.targetTouches[0].clientY;
+		afterElement = getDragAfterElement(sectionTodos, top);
 
 		const draggable = document.querySelector(".dragging");
-		if (afterElement == null) {
+		if (!afterElement) {
 			sectionTodos.appendChild(draggable);
 		} else {
 			sectionTodos.insertBefore(draggable, afterElement);
@@ -215,14 +309,6 @@ function createFunctionality() {
 	}
 }
 
-function deleteTask() {
-	liParent = this.parentElement;
-	data.splice(liParent.id, 1);
-	liParent.remove();
-
-	showTodos();
-}
-
 function showItemsLeft() {
 	const uncheckedTodos = getTodos();
 	if (!uncheckedTodos) {
@@ -232,16 +318,19 @@ function showItemsLeft() {
 	}
 }
 
-buttonAll.addEventListener("click", () => showTodos(data));
+buttonAll.addEventListener("click", () => {
+	state.setState("all");
+	showTodos();
+});
 
 buttonActive.addEventListener("click", () => {
-	const uncheckedTodos = getTodos();
-	showTodos(uncheckedTodos);
+	state.setState("active");
+	showTodos();
 });
 
 buttonCompleted.addEventListener("click", () => {
-	const checkedTodos = getTodos((checked = false));
-	showTodos(checkedTodos);
+	state.setState("completed");
+	showTodos();
 });
 
 buttonClearCompleted.addEventListener("click", () => {
@@ -295,13 +384,42 @@ lightSwitch.addEventListener("click", () => {
 	document.documentElement.setAttribute("data-theme", switchToTheme);
 });
 
-// Use something like this for edit on touble click
+// Add 'edit' feature after refactoring + id for each list
+
+document.querySelectorAll("li .text-output").forEach(function (node) {
+	node.addEventListener("dblclick", function () {
+		node.removeAttribute("readonly");
+		node.style.cursor = "text";
+		node.focus();
+
+		node.addEventListener("keypress", function (e) {
+			if (e.key === "Enter") {
+				node.blur();
+			}
+		});
+		node.onblur = function () {
+			node.style.cursor = "pointer";
+			node.setAttribute("readonly", "readonly");
+			const nodeID = node.parentElement.id;
+
+			data.map((d, i) => {
+				if (d.listID == nodeID) {
+					data[i].text = node.value;
+				}
+			});
+
+			localStorage.setItem("data", JSON.stringify(data));
+		};
+	});
+});
 
 /*
-document.querySelectorAll("li").forEach(function (node) {
+document.querySelectorAll("li p.text-output").forEach((node) => {
 	node.ondblclick = function () {
-		var val = this.innerHTML;
-		var input = document.createElement("input");
+		let val = this.innerHTML;
+		const input = document.createElement("input");
+		input.classList.add("text-new-todo");
+		input.classList.add("text");
 		input.value = val;
 		input.onblur = function () {
 			var val = this.value;

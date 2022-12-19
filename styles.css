@@ -136,15 +136,12 @@ section, ul{
 }
 input[type=checkbox]{
     appearance:none;
-
     border:1px solid var(--border-color);
     border-radius:50%;
     background-color: var(--main-background-color);
     margin-right:1.25rem;
     cursor: pointer;
     position: relative;
-
-    
 }
 input[type=checkbox]:hover{
     background-image: linear-gradient(var(--main-background-color), var(--main-background-color)), 
@@ -177,7 +174,7 @@ hr{
     border:none;
 }
 
-section.top #text-new-todo{
+.text-new-todo{
     background-color:transparent;
     border:1px solid black;
     font-size:var(--font-size-body);
@@ -188,27 +185,27 @@ section.top #text-new-todo{
     color:var(--text-color);
     caret-color:var(--primary-blue);
 }
-section.top #text-new-todo::placeholder{
+
+section.top .text-new-todo::placeholder{
     color:var(--placeholder-color);
 }
-section.top #text-new-todo:focus{
+.text-new-todo:focus{
     outline:none;
 }
 /* Gets rid of placeholder on focus*/
-section.top #text-new-todo:focus::placeholder{
+section.top .text-new-todo:focus::placeholder{
     color:transparent;
 }
 
-li p.text-output{
-    font-size:var(--font-size-body);
-    color:var(--text-color);
-
+li .text-new-todo{
+    cursor:pointer;
 }
 li .button-delete{
     background-color: transparent;
     border:none;
     margin: 0 0 0 auto;
     cursor: pointer;
+
 }
 
 nav.navbar{
@@ -394,7 +391,7 @@ button.focused{
         margin-bottom:1.5rem;
     }
 
-    li p.text-output{
+    li .text-output{
         margin-top:0.2rem;
     }
 

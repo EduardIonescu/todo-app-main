@@ -69,6 +69,7 @@ I want to further explore CRUD and using it with databases.
 -   [How To Build Sortable Drag & Drop](https://www.youtube.com/watch?v=jfYWwQrtzzY&ab_channel=WebDevSimplified) - This helped me build the Drag&Drop functionality
 -   [CRUD Operations by freeCodeCamp](https://www.freecodecamp.org/news/learn-crud-operations-in-javascript-by-building-todo-app/) - This is an amazing article which helped me understand CRUD operations.
 -   [JavaScript30 localStorage](https://www.youtube.com/watch?v=YL1F4dCUlLc) - This taught me about localStorage and how to set / get / delete it
+-   [Drag & Drop for mobile](https://stackoverflow.com/a/21504766) - This made everything way simpler when I wanted to make the D&D work on mobile as well.
 
 ## Author
 

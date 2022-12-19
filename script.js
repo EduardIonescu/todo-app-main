@@ -1,7 +1,7 @@
 const form = document.querySelector("form");
 const formCheckbox = document.querySelector("input#checkbox-new-todo");
 const textInput = document.querySelector("input#text-new-todo");
-const sectionTodos = document.querySelector("section.bottom");
+const sectionTodos = document.querySelector("ul.bottom");
 
 const itemsLeft = document.querySelector(".number-items-left");
 
@@ -32,9 +32,32 @@ function formValidation() {
 		acceptData();
 	}
 }
-
+console.log(localStorage.getItem("data"));
 let data = [];
 
+// On first load / when refreshed with no items,
+// the data takes the value of defaultData
+
+const defaultData = [
+	{ text: "Complete online JavaScript course", isChecked: true },
+	{ text: "Jog around the park 3x", isChecked: false },
+	{ text: "10 minutes meditation", isChecked: false },
+	{ text: "Read for 1 hour", isChecked: false },
+	{ text: "Pick up groceries", isChecked: false },
+	{ text: "Complete Todo App on Frontend Mentor", isChecked: false },
+];
+(() => {
+	data = JSON.parse(localStorage.getItem("data")) || [];
+
+	if (data.length == 0) {
+		data = defaultData;
+	} else {
+	}
+	console.log(data);
+	showTodos();
+})();
+
+// Accepts input data
 function acceptData() {
 	data.push({
 		text: textInput.value,
@@ -51,7 +74,7 @@ function showTodos(selectedData = data) {
 
 	selectedData.map((d, i) => {
 		return (sectionTodos.innerHTML += `
-			<article class="container-item" draggable="true" id=${i}>
+			<li class="container-item" draggable="true" id=${i}>
 				<input 
 					type="checkbox" 
 					name="" 
@@ -64,7 +87,7 @@ function showTodos(selectedData = data) {
 				<button class="button-delete hidden">
 					<img src="/images/icon-cross.svg" alt="delete button" />
 				</button>
-			</article>
+			</li>
 
 			`);
 	});
@@ -80,8 +103,8 @@ function resetForm() {
 
 // Button checked + delete button
 function createFunctionality() {
-	const checkboxes = document.querySelectorAll("section.bottom .checkbox");
-	const articles = document.querySelectorAll("article.container-item");
+	const checkboxes = document.querySelectorAll("ul.bottom .checkbox");
+	const listItems = document.querySelectorAll("li.container-item");
 	const deleteButtons = document.querySelectorAll(".button-delete");
 
 	checkboxes.forEach((checkbox, index) => {
@@ -95,15 +118,15 @@ function createFunctionality() {
 	});
 
 	// Show delete button on hover
-	articles.forEach((article, index) => {
+	listItems.forEach((li, index) => {
 		const deleteButton = deleteButtons[index];
 
-		article.addEventListener("mouseenter", () => {
+		li.addEventListener("mouseenter", () => {
 			if (deleteButton.classList.contains("hidden")) {
 				deleteButton.classList.remove("hidden");
 			}
 		});
-		article.addEventListener("mouseleave", () => {
+		li.addEventListener("mouseleave", () => {
 			deleteButton.classList.add("hidden");
 		});
 	});
@@ -113,38 +136,53 @@ function createFunctionality() {
 	});
 
 	// DRAG & DROP
-	articles.forEach((draggable) => {
+	listItems.forEach((draggable) => {
 		draggable.addEventListener("dragstart", () =>
 			draggable.classList.add("dragging")
 		);
+		draggable.addEventListener("touchstart", () =>
+			draggable.classList.add("dragging")
+		);
 
-		draggable.addEventListener("dragend", () => {
-			draggable.classList.remove("dragging");
-			const articlesAfterMoving = document.querySelectorAll("article");
-
-			// Reinitialize data with articles after dragend
-			data = [];
-			articlesAfterMoving.forEach((article) => {
-				const text = article.querySelector("p.text-output").innerHTML;
-				const isChecked = article
-					.querySelector("input[type=checkbox]")
-					.hasAttribute("checked");
-
-				data.push({
-					text,
-					isChecked,
-				});
-			});
-
-			showTodos();
-			localStorage.setItem("data", JSON.stringify(data));
-		});
+		draggable.addEventListener("dragend", dragend);
+		draggable.addEventListener("touchend", dragend);
 	});
+
+	function dragend() {
+		this.classList.remove("dragging");
+		const listItemsAfterMoving = document.querySelectorAll("li");
+
+		// Reinitialize data with listItems after dragend
+		data = [];
+		listItemsAfterMoving.forEach((li) => {
+			const text = li.querySelector("p.text-output").innerHTML;
+			const isChecked = li
+				.querySelector("input[type=checkbox]")
+				.hasAttribute("checked");
+
+			data.push({
+				text,
+				isChecked,
+			});
+		});
+
+		showTodos();
+		localStorage.setItem("data", JSON.stringify(data));
+	}
 
 	// Worth looking into debouncers for this one
 	sectionTodos.addEventListener("dragover", (e) => {
+		dragover(e);
+	});
+	sectionTodos.addEventListener("touchmove", (e) => {
+		dragover(e);
+	});
+
+	function dragover(e) {
 		e.preventDefault();
-		const afterElement = getDragAfterElement(sectionTodos, e.clientY);
+		// first one for Desktop, second one for Touchscreen
+		const top = e.clientY || e.targetTouches[0].pageY;
+		const afterElement = getDragAfterElement(sectionTodos, top);
 
 		const draggable = document.querySelector(".dragging");
 		if (afterElement == null) {
@@ -152,11 +190,11 @@ function createFunctionality() {
 		} else {
 			sectionTodos.insertBefore(draggable, afterElement);
 		}
-	});
+	}
 
 	function getDragAfterElement(container, y) {
 		const draggableElements = [
-			...container.querySelectorAll("article:not(.dragging)"),
+			...container.querySelectorAll("li:not(.dragging)"),
 		];
 
 		return draggableElements.reduce(
@@ -178,9 +216,9 @@ function createFunctionality() {
 }
 
 function deleteTask() {
-	articleParent = this.parentElement;
-	data.splice(articleParent.id, 1);
-	articleParent.remove();
+	liParent = this.parentElement;
+	data.splice(liParent.id, 1);
+	liParent.remove();
 
 	showTodos();
 }
@@ -228,17 +266,15 @@ function getTodos(checked = true) {
 	return data.filter((d) => d.isChecked != checked);
 }
 
-(() => {
-	data = JSON.parse(localStorage.getItem("data")) || [];
-	console.log(data);
-	showTodos();
-})();
-
 // Light & Dark mode switch
+let windowWidth = window.innerWidth;
+window.addEventListener("resize", () => (windowWidth = window.innerWidth));
+
 const sun = document.querySelector(".sun");
 const moon = document.querySelector(".moon");
 const lightSwitch = document.querySelector(".light-switch");
 const imageBG = document.querySelector(".image-bg");
+const imageBGMobile = document.querySelector(".image-bg-mobile");
 
 lightSwitch.addEventListener("click", () => {
 	sun.classList.toggle("animate-sun");
@@ -248,7 +284,32 @@ lightSwitch.addEventListener("click", () => {
 
 	const switchToTheme = currentTheme === "dark" ? "light" : "dark";
 
+	// Change background image
+	imageBGMobile.setAttribute(
+		"srcset",
+		`./images/bg-mobile-${switchToTheme}.jpg`
+	);
+
 	imageBG.setAttribute("src", `./images/bg-desktop-${switchToTheme}.jpg`);
 
 	document.documentElement.setAttribute("data-theme", switchToTheme);
 });
+
+// Use something like this for edit on touble click
+
+/*
+document.querySelectorAll("li").forEach(function (node) {
+	node.ondblclick = function () {
+		var val = this.innerHTML;
+		var input = document.createElement("input");
+		input.value = val;
+		input.onblur = function () {
+			var val = this.value;
+			this.parentNode.innerHTML = val;
+		};
+		this.innerHTML = "";
+		this.appendChild(input);
+		input.focus();
+	};
+});
+*/

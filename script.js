@@ -133,19 +133,20 @@ function showTodos() {
 		return (sectionTodos.innerHTML += `
 			<li class="container-item" draggable="true" id=${dataItem.listID}>
 				<input 
-					type="checkbox" 
-					name="" 
+					type="checkbox"  
 					class="checkbox"
+					aria-label="check-list-item"
 					${dataItem.isChecked ? "checked" : ""} />
 				<input class="text-output text-new-todo ${
 					dataItem.isChecked ? "line-through" : ""
 				}" 
 						readonly
 						type="text"
+						aria-label="list-item"
 						maxlength=50
 						value="${dataItem.text}" />
 
-				<button class="button-delete hidden">
+				<button class="button-delete hidden" aria-label="Delete List Item">
 					<img src="./images/icon-cross.svg" alt="delete button" />
 				</button>
 			</li>

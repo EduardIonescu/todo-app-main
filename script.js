@@ -27,6 +27,7 @@ const state = {
 			this[key] = false;
 		}
 		this[stateName] = true;
+		showTodos();
 	},
 };
 
@@ -42,6 +43,7 @@ form.addEventListener("submit", (e) => {
 function formValidation() {
 	if (textInput.value === "") {
 	} else {
+		// Might be worth looking into uuid v4 to get unique IDs, but for now this works
 		let randomID = Math.floor(10 ** 12 * Math.random());
 		randomID = "id" + randomID;
 
@@ -110,47 +112,48 @@ function acceptData(listID) {
 function showTodos() {
 	sectionTodos.innerHTML = "";
 
+	// Filter the list based on state
 	if (state.all) {
-		data.map((d, i) => {
-			createListItems(d);
+		data.map((dataItem) => {
+			createListItems(dataItem);
 		});
 	} else if (state.active) {
 		const uncheckedTodoList = getTodos();
-		uncheckedTodoList.map((d, i) => {
-			createListItems(d);
+		uncheckedTodoList.map((dataItem) => {
+			createListItems(dataItem);
 		});
 	} else {
 		const checkedTodoList = getTodos((checked = false));
-		checkedTodoList.map((d, i) => {
-			createListItems(d);
+		checkedTodoList.map((dataItem) => {
+			createListItems(dataItem);
 		});
 	}
 
-	function createListItems(d) {
+	function createListItems(dataItem) {
 		return (sectionTodos.innerHTML += `
-			<li class="container-item" draggable="true" id=${d.listID}>
+			<li class="container-item" draggable="true" id=${dataItem.listID}>
 				<input 
 					type="checkbox" 
 					name="" 
 					class="checkbox"
-					${d.isChecked ? "checked" : ""} />
-				<input class="text-output text-new-todo ${d.isChecked ? "line-through" : ""}" 
+					${dataItem.isChecked ? "checked" : ""} />
+				<input class="text-output text-new-todo ${
+					dataItem.isChecked ? "line-through" : ""
+				}" 
 						readonly
 						type="text"
 						maxlength=50
-						value="${d.text}" />
-					
-				
+						value="${dataItem.text}" />
 
 				<button class="button-delete hidden">
-					<img src="/images/icon-cross.svg" alt="delete button" />
+					<img src="./images/icon-cross.svg" alt="delete button" />
 				</button>
 			</li>
 
 			`);
 	}
 
-	localStorage.setItem("data", JSON.stringify(data));
+	setLocalStorageData();
 	showItemsLeft();
 	createFunctionality();
 	resetForm();
@@ -169,6 +172,8 @@ function createFunctionality() {
 	checkboxes.forEach((checkbox, index) => {
 		checkbox.addEventListener("click", () => {
 			checkbox.toggleAttribute("checked");
+
+			//const indexFrom = data.findIndex((list) => list.listID == this.id);
 			data[index].isChecked = !data[index].isChecked;
 
 			showTodos();
@@ -204,7 +209,11 @@ function createFunctionality() {
 		showTodos();
 	}
 
-	// DRAG & DROP
+	// Drag and Drop + Touch Functionality
+	dragAndDrop(listItems);
+}
+
+function dragAndDrop(listItems) {
 	listItems.forEach((draggable) => {
 		draggable.addEventListener("dragstart", () =>
 			draggable.classList.add("dragging")
@@ -221,7 +230,7 @@ function createFunctionality() {
 		this.splice(to, 0, this.splice(from, 1)[0]);
 	};
 
-	let afterElement;
+	let afterElement = null;
 
 	function dragend() {
 		this.classList.remove("dragging");
@@ -230,8 +239,12 @@ function createFunctionality() {
 		let indexTo;
 		if (afterElement) {
 			indexTo = data.findIndex((list) => list.listID == afterElement.id);
-		} else {
+		} else if (afterElement === undefined) {
 			indexTo = data.length - 1;
+		}
+		// touch event triggers even on simple click and this skips it.
+		else {
+			return;
 		}
 
 		const indexFrom = data.findIndex((list) => list.listID == this.id);
@@ -243,34 +256,33 @@ function createFunctionality() {
 		}
 
 		showTodos();
-		localStorage.setItem("data", JSON.stringify(data));
+		setLocalStorageData();
 	}
 
 	// Worth looing into better debouncer for this one, but this still helps.
-	function debounce(fn, delay) {
-		var timer = null;
+	function debounce(func, wait, immediate) {
+		var timeout;
 		return function () {
 			var context = this,
 				args = arguments;
-			clearTimeout(timer);
-			timer = setTimeout(function () {
-				fn.apply(context, args);
-			}, delay);
+			var later = function () {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
 		};
 	}
 
-	sectionTodos.addEventListener(
-		"dragover",
-		debounce((e) => {
-			dragover(e);
-			// more than 3ms delay just makes it seem too laggy
-		}, 3)
-	);
+	// No debouncer on Desktop because it sets the cursor to 'not allowed'
+	// Haven't found solution for it
+	sectionTodos.addEventListener("dragover", dragover);
 
-	// Debouncer messes this one up, worth looking into in the future.
-	sectionTodos.addEventListener("touchmove", (e) => {
-		dragover(e);
-	});
+	// more than 3ms delay just makes it seem too laggy
+	const debouncedDragover = debounce(dragover, 3);
+	sectionTodos.addEventListener("touchmove", debouncedDragover);
 
 	function dragover(e) {
 		e.preventDefault();
@@ -320,17 +332,14 @@ function showItemsLeft() {
 
 buttonAll.addEventListener("click", () => {
 	state.setState("all");
-	showTodos();
 });
 
 buttonActive.addEventListener("click", () => {
 	state.setState("active");
-	showTodos();
 });
 
 buttonCompleted.addEventListener("click", () => {
 	state.setState("completed");
-	showTodos();
 });
 
 buttonClearCompleted.addEventListener("click", () => {
@@ -341,14 +350,21 @@ buttonClearCompleted.addEventListener("click", () => {
 
 buttonsNavbar.forEach((button) => {
 	button.addEventListener("click", () => {
-		buttonsNavbar.forEach((btn) => {
-			if (btn.classList.contains("focused")) {
-				btn.classList.remove("focused");
-			}
-		});
-		button.classList.add("focused");
+		defocusButtons();
+		focusButton(button);
 	});
 });
+
+function defocusButtons() {
+	buttonsNavbar.forEach((btn) => {
+		if (btn.classList.contains("focused")) {
+			btn.classList.remove("focused");
+		}
+	});
+}
+function focusButton(button) {
+	button.classList.add("focused");
+}
 
 // Get checked todos when true / unchecked todos when false
 function getTodos(checked = true) {
@@ -384,8 +400,7 @@ lightSwitch.addEventListener("click", () => {
 	document.documentElement.setAttribute("data-theme", switchToTheme);
 });
 
-// Add 'edit' feature after refactoring + id for each list
-
+// Edit on double click but it's messy
 document.querySelectorAll("li .text-output").forEach(function (node) {
 	node.addEventListener("dblclick", function () {
 		node.removeAttribute("readonly");
@@ -408,26 +423,11 @@ document.querySelectorAll("li .text-output").forEach(function (node) {
 				}
 			});
 
-			localStorage.setItem("data", JSON.stringify(data));
+			setLocalStorageData();
 		};
 	});
 });
 
-/*
-document.querySelectorAll("li p.text-output").forEach((node) => {
-	node.ondblclick = function () {
-		let val = this.innerHTML;
-		const input = document.createElement("input");
-		input.classList.add("text-new-todo");
-		input.classList.add("text");
-		input.value = val;
-		input.onblur = function () {
-			var val = this.value;
-			this.parentNode.innerHTML = val;
-		};
-		this.innerHTML = "";
-		this.appendChild(input);
-		input.focus();
-	};
-});
-*/
+function setLocalStorageData() {
+	localStorage.setItem("data", JSON.stringify(data));
+}

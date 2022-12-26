@@ -39,8 +39,7 @@ Users should be able to:
 ### Extra features
 
 -   Lists are saved in localStorage
-
-### Screenshot
+-   Double click to edit text \*_bugged_
 
 ## My process
 
@@ -57,12 +56,15 @@ Users should be able to:
 
 -   localStorage
 -   CRUD Operations
--   Drag & Drop
+-   Drag & Drop + Touch events
 -   Filter list items
+-   Some state management
 
 ### Continued development
 
-I want to further explore CRUD and using it with databases.
+-   I want to further explore CRUD and using it with databases.
+-   React's state would've helped make the code run smoother and be cleaner. So i'm going to learn it soon.
+-   File management / import + export for better reusability and a cleaner project look.
 
 ### Useful resources
 

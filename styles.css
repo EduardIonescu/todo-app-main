@@ -92,8 +92,7 @@ body{
 
 header{
     display: flex;
-    justify-content: space-between;
-    
+    justify-content: space-between; 
 }
 
 header button.light-switch{
@@ -150,11 +149,8 @@ input[type=checkbox]:hover{
     background-clip: content-box, border-box;
     border-color: transparent;
 }
-
-
 input[type=checkbox][checked]{
     background-image: url("./images/icon-check.svg"), linear-gradient(135deg, var(--linear-gradient-color-1), var(--linear-gradient-color-2));
-
     background-repeat:no-repeat;
     border:none;
 }
@@ -205,7 +201,6 @@ li .button-delete{
     border:none;
     margin: 0 0 0 auto;
     cursor: pointer;
-
 }
 
 nav.navbar{
@@ -254,6 +249,11 @@ footer{
 
 .dragging{
     opacity:0.5;
+    cursor:move;
+}
+
+.dragging:active{
+    cursor:move;
 }
 
 button.focused{
@@ -304,7 +304,6 @@ button.focused{
         width:0.8rem;
         height:0.8rem;
     }
-
 
     section.top{
         margin-top:2.1rem;
